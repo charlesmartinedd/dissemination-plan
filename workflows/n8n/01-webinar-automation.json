@@ -1,0 +1,276 @@
+{
+  "name": "ModelIt! Webinar Automation",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Workflow Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webinar-registration",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook: New Registration",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "webhookId": "webinar-reg-001"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": "{{$env.GOOGLE_SHEET_CRM_ID}}",
+        "sheetName": "Webinar Registrants",
+        "columns": "email,first_name,last_name,school,grade_level,webinar_id,registration_date",
+        "options": {}
+      },
+      "name": "Add to CRM",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "charlesmartinedd@gmail.com",
+        "toEmail": "={{$node['Webhook: New Registration'].json['email']}}",
+        "subject": "You're Registered! 🎉 {{$node['Webhook: New Registration'].json['webinar_title']}}",
+        "emailType": "html",
+        "message": "<!DOCTYPE html><html><head><style>body{font-family:'Segoe UI',Arial,sans-serif;color:#2B2B40;background:#F2F6FA;padding:20px}header{background:#1F4E79;color:white;padding:20px;text-align:center}.content{background:white;padding:30px;border-radius:8px;margin:20px 0}.cta{background:#0078D7;color:white;padding:15px 30px;text-decoration:none;border-radius:5px;display:inline-block;margin:20px 0}footer{text-align:center;color:#666;font-size:12px}</style></head><body><header><h1>🎉 You're Registered!</h1></header><div class='content'><h2>Hi {{$node['Webhook: New Registration'].json['first_name']}},</h2><p>Excited to see you at our upcoming webinar!</p><h3>Webinar Details:</h3><ul><li><strong>Topic:</strong> {{$node['Webhook: New Registration'].json['webinar_title']}}</li><li><strong>Date:</strong> {{$node['Webhook: New Registration'].json['webinar_date']}}</li><li><strong>Time:</strong> {{$node['Webhook: New Registration'].json['webinar_time']}} PT</li><li><strong>Duration:</strong> 60 minutes</li></ul><a href='{{$node['Webhook: New Registration'].json['join_url']}}' class='cta'>Add to Calendar</a><h3>What You'll Learn:</h3><ul><li>How to integrate simulations into your curriculum</li><li>Live demo of Micro Mayhem</li><li>Classroom management tips</li><li>Q&A with pilot teachers</li></ul><p><strong>Before the Webinar:</strong></p><ul><li>Test your audio/video</li><li>Download our Quick Start Guide</li><li>Submit questions in advance</li></ul><p>Can't make it? No worries! We'll send you the recording.</p><p>See you soon!<br>Charles Martin<br>Founder, ModelIt!</p></div><footer><p>© 2025 ModelIt! Educational Simulations</p></footer></body></html>"
+      },
+      "name": "Send Confirmation Email",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [850, 300],
+      "credentials": {
+        "sendGridApi": {
+          "id": "1",
+          "name": "SendGrid API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysOffset": -7
+            }
+          ]
+        },
+        "triggerAtTime": "09:00"
+      },
+      "name": "Schedule: 1 Week Reminder",
+      "type": "n8n-nodes-base.schedule",
+      "typeVersion": 1,
+      "position": [450, 500]
+    },
+    {
+      "parameters": {
+        "fromEmail": "charlesmartinedd@gmail.com",
+        "toEmail": "={{$node['Add to CRM'].json['email']}}",
+        "subject": "Reminder: Your webinar is in 1 week! 📚",
+        "emailType": "html",
+        "message": "<!DOCTYPE html><html><body style='font-family:Segoe UI,Arial,sans-serif;color:#2B2B40'><h2>Hi {{$node['Add to CRM'].json['first_name']}},</h2><p>Just a friendly reminder that your webinar is coming up next week!</p><h3>{{$node['Add to CRM'].json['webinar_title']}}</h3><p><strong>Date:</strong> {{$node['Add to CRM'].json['webinar_date']}}<br><strong>Time:</strong> {{$node['Add to CRM'].json['webinar_time']}} PT</p><p>We're so excited to share practical strategies for using simulations in your classroom.</p><p><strong>While you wait, check out this free resource:</strong><br><a href='https://modelit.com/quick-start-guide'>Quick Start Guide: Getting Started with ModelIt!</a></p><p>See you next week!<br>Charles</p></body></html>"
+      },
+      "name": "Send 1 Week Reminder",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [650, 500]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysOffset": -1
+            }
+          ]
+        },
+        "triggerAtTime": "16:00"
+      },
+      "name": "Schedule: 24h Reminder",
+      "type": "n8n-nodes-base.schedule",
+      "typeVersion": 1,
+      "position": [450, 700]
+    },
+    {
+      "parameters": {
+        "fromEmail": "charlesmartinedd@gmail.com",
+        "toEmail": "={{$node['Add to CRM'].json['email']}}",
+        "subject": "Tomorrow at 4pm PT: {{$node['Add to CRM'].json['webinar_title']}}",
+        "emailType": "html",
+        "message": "<!DOCTYPE html><html><body style='font-family:Segoe UI,Arial,sans-serif;color:#2B2B40'><h2>Hi {{$node['Add to CRM'].json['first_name']}},</h2><p><strong>Tomorrow</strong> at <strong>4:00 PM Pacific Time</strong>, we'll dive into practical ways to use simulations in your classroom.</p><h3>📋 Agenda:</h3><ul><li>Introduction to computational modeling (10 min)</li><li>Live Micro Mayhem demo (20 min)</li><li>Classroom integration strategies (15 min)</li><li>Q&A with pilot teachers (15 min)</li></ul><h3>🔗 Join Link:</h3><p><a href='{{$node['Add to CRM'].json['join_url']}}' style='background:#0078D7;color:white;padding:12px 24px;text-decoration:none;border-radius:5px;display:inline-block'>Click Here to Join</a></p><p><strong>Pro Tip:</strong> Join 5 minutes early to test your audio and video!</p><p>See you tomorrow!<br>Charles Martin</p></body></html>"
+      },
+      "name": "Send 24h Reminder",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [650, 700]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursOffset": -1
+            }
+          ]
+        }
+      },
+      "name": "Schedule: 1h Reminder",
+      "type": "n8n-nodes-base.schedule",
+      "typeVersion": 1,
+      "position": [450, 900]
+    },
+    {
+      "parameters": {
+        "fromEmail": "charlesmartinedd@gmail.com",
+        "toEmail": "={{$node['Add to CRM'].json['email']}}",
+        "subject": "Starting in 60 minutes! 🚀",
+        "emailType": "html",
+        "message": "<!DOCTYPE html><html><body style='font-family:Segoe UI,Arial,sans-serif;color:#2B2B40'><h2>Hi {{$node['Add to CRM'].json['first_name']}},</h2><p>We're starting in just <strong>1 hour</strong>!</p><h3 style='color:#0078D7'>Join Now</h3><p><a href='{{$node['Add to CRM'].json['join_url']}}' style='background:#0078D7;color:white;padding:15px 40px;text-decoration:none;border-radius:5px;display:inline-block;font-size:18px'>Click to Join Webinar</a></p><p><em>Feel free to join early - we'll open the room 15 minutes before for a practice session.</em></p><p>Can't wait to see you!<br>Charles</p></body></html>"
+      },
+      "name": "Send 1h Reminder",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [650, 900]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webinar-recording-ready",
+        "responseMode": "responseNode"
+      },
+      "name": "Webhook: Recording Ready",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [450, 1100],
+      "webhookId": "webinar-recording-001"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Generate certificate PDF using Python script\nconst registrantName = $input.item.json.first_name + ' ' + $input.item.json.last_name;\nconst webinarTitle = $input.item.json.webinar_title;\nconst webinarDate = $input.item.json.webinar_date;\n\n// This would call Python script: scripts/python/webinar_certificate_generator.py\nconst certificateId = 'MODELIT-' + Date.now() + '-' + Math.floor(Math.random() * 10000);\nconst certificateUrl = 'https://drive.google.com/certificates/' + certificateId + '.pdf';\n\nreturn {\n  json: {\n    ...$ input.item.json,\n    certificate_id: certificateId,\n    certificate_url: certificateUrl\n  }\n};"
+      },
+      "name": "Generate Certificate",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [650, 1100]
+    },
+    {
+      "parameters": {
+        "fromEmail": "charlesmartinedd@gmail.com",
+        "toEmail": "={{$node['Generate Certificate'].json['email']}}",
+        "subject": "Webinar Recording + Certificate 🎬",
+        "emailType": "html",
+        "message": "<!DOCTYPE html><html><body style='font-family:Segoe UI,Arial,sans-serif;color:#2B2B40'><h2>Hi {{$node['Generate Certificate'].json['first_name']}},</h2><p>Thanks for attending yesterday's webinar! Here's everything you need:</p><h3>🎬 Watch the Replay:</h3><p><iframe width='560' height='315' src='{{$node['Webhook: Recording Ready'].json['youtube_url']}}' frameborder='0' allowfullscreen></iframe></p><p><a href='{{$node['Webhook: Recording Ready'].json['youtube_url']}}'>Watch on YouTube</a></p><h3>📄 Resources:</h3><ul><li><a href='{{$node['Webhook: Recording Ready'].json['slides_url']}}'>Webinar Slides (PDF)</a></li><li><a href='https://modelit.com/lesson-templates'>Lesson Plan Templates</a></li><li><a href='{{$node['Generate Certificate'].json['certificate_url']}}'>Certificate of Attendance (2 PD hours)</a></li><li><a href='https://modelit.com/community'>Join our Teacher Community</a></li></ul><h3>🚀 What's Next?</h3><p>Ready to try ModelIt! with your students?</p><p><a href='https://modelit.com/pilot-signup?source=webinar' style='background:#0078D7;color:white;padding:12px 24px;text-decoration:none;border-radius:5px;display:inline-block'>Join Our Pilot Program</a></p><p>Questions? Just reply to this email!</p><p>Charles Martin<br>Founder, ModelIt!</p></body></html>"
+      },
+      "name": "Send Replay Email",
+      "type": "n8n-nodes-base.sendGrid",
+      "typeVersion": 1,
+      "position": [850, 1100]
+    }
+  ],
+  "connections": {
+    "Workflow Start": {
+      "main": [
+        [
+          {
+            "node": "Webhook: New Registration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: New Registration": {
+      "main": [
+        [
+          {
+            "node": "Add to CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to CRM": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: 1 Week Reminder": {
+      "main": [
+        [
+          {
+            "node": "Send 1 Week Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: 24h Reminder": {
+      "main": [
+        [
+          {
+            "node": "Send 24h Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule: 1h Reminder": {
+      "main": [
+        [
+          {
+            "node": "Send 1h Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Recording Ready": {
+      "main": [
+        [
+          {
+            "node": "Generate Certificate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Certificate": {
+      "main": [
+        [
+          {
+            "node": "Send Replay Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "1.0.0",
+  "meta": {
+    "instanceId": "modelit-dissemination-001"
+  }
+}

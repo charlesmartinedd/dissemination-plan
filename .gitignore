@@ -1,0 +1,116 @@
+# ModelIt! Dissemination Plan - Git Ignore
+
+# ===== SENSITIVE FILES =====
+.env
+*.env.local
+*.env.production
+.env.*.local
+secrets/
+credentials/
+tokens/
+
+# ===== PYTHON =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+ENV/
+env/
+
+# ===== CERTIFICATES (Generated Files) =====
+certificates/*.pdf
+temp/*.pdf
+
+# ===== DATA & LOGS =====
+*.log
+logs/
+*.csv
+*.xlsx
+*.xls
+# Keep templates
+!templates/**/*.csv
+!templates/**/*.xlsx
+
+# ===== SYSTEM FILES =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# ===== NODE (if using any Node tools) =====
+node_modules/
+package-lock.json
+yarn.lock
+
+# ===== TESTING =====
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# ===== MEDIA (Large Files) =====
+*.mp4
+*.mov
+*.avi
+*.wmv
+# Keep example/reference media
+!assets/examples/**
+
+# ===== BACKUP FILES =====
+*.bak
+*.backup
+*~
+
+# ===== TEMPORARY FILES =====
+tmp/
+temp/
+*.tmp
+*.temp
+
+# ===== GOOGLE API CREDENTIALS =====
+# Note: These are stored in a separate directory outside the repo
+# C:\Users\MarieLexisDad\Old Files\google-workspace-mcp\token-*.json
+credentials.json
+token.json
+token.pickle
+
+# === == N8N EXPORTED WORKFLOWS (Keep the JSON templates) =====
+# We keep workflow/*.json in version control as templates
+# But ignore any modified/customized versions
+workflows/custom/
+
+# ===== OFFICE 365 TOKENS =====
+# Note: Stored at C:\Users\MarieLexisDad\.office-mcp-tokens.json
+.office-mcp-tokens.json
+
+# ===== KEEP THESE FILES =====
+!.env.example
+!README.md
+!requirements.txt
